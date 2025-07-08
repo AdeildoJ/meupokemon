@@ -1,0 +1,52 @@
+body {
+  background-color: #f8f9fa;
+}
+
+.navbar-brand {
+  font-weight: bold;
+}
+
+.card {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1 );
+}
+
+.list-card {
+  transition: transform 0.2s;
+  cursor: pointer;
+}
+
+.list-card:hover {
+  transform: translateY(-5px);
+}
+
+.list-card .card-img-top {
+  height: 120px;
+  object-fit: contain;
+  padding: 10px;
+  background-color: #f1f1f1;
+}
+
+.badge-chance {
+  font-size: 0.9rem;
+}
+
+.badge-quantity {
+  font-size: 0.9rem;
+}
+
+.action-btn {
+  margin-right: 5px;
+}
+
+.pokemon-row {
+  vertical-align: middle;
+}
+
+.pokemon-row.out-of-stock {
+  background-color: #ffeeee !important;
+}
+
+.chance-warning {
+  color: #dc3545;
+  font-weight: bold;
+}

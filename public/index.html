@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pokedex Admin</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome para ícones -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- CSS personalizado -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Conteúdo será carregado dinamicamente pelo JavaScript -->
+    <div id="login-container" class="container mt-5">
+      <div class="row justify-content-center">
+        <div class="col-md-6">
+          <div class="card">
+            <div class="card-header bg-primary text-white">
+              <h3 class="text-center">Pokedex Admin</h3>
+            </div>
+            <div class="card-body">
+              <form id="login-form">
+                <div class="mb-3">
+                  <label for="email" class="form-label">Email</label>
+                  <input type="email" class="form-control" id="email" required>
+                </div>
+                <div class="mb-3">
+                  <label for="password" class="form-label">Senha</label>
+                  <input type="password" class="form-control" id="password" required>
+                </div>
+                <div class="d-grid">
+                  <button type="submit" class="btn btn-primary">Entrar</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="main-container" class="container-fluid d-none">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+        <div class="container-fluid">
+          <a class="navbar-brand" href="#">Pokedex Admin</a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+              <li class="nav-item">
+                <a class="nav-link active" href="#" id="nav-pokeballs">Pokéballs</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#" id="nav-fishing">Varas de Pesca</a>
+              </li>
+            </ul>
+            <ul class="navbar-nav ms-auto">
+              <li class="nav-item">
+                <a class="nav-link" href="#" id="logout-btn">
+                  <i class="fas fa-sign-out-alt"></i> Sair
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </nav>
+
+      <div class="container">
+        <div id="lists-container">
+          <!-- Listas de encontro serão carregadas aqui -->
+        </div>
+
+        <div id="pokemon-container" class="mt-4 d-none">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 id="list-title">Pokémon na Lista</h2>
+            <div>
+              <button id="normalize-btn" class="btn btn-warning me-2">
+                <i class="fas fa-balance-scale"></i> Normalizar Chances
+              </button>
+              <button id="add-pokemon-btn" class="btn btn-success">
+                <i class="fas fa-plus"></i> Adicionar Pokémon
+              </button>
+            </div>
+          </div>
+          
+          <div class="table-responsive">
+            <table class="table table-striped table-hover">
+              <thead class="table-dark">
+                <tr>
+                  <th>Espécie</th>
+                  <th>Nível</th>
+                  <th>Chance (% )</th>
+                  <th>Quantidade</th>
+                  <th>Movimentos</th>
+                  <th>Natureza</th>
+                  <th>Habilidade</th>
+                  <th>Item</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="pokemon-list">
+                <!-- Pokémon serão carregados aqui -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal para adicionar/editar Pokémon -->
+    <div class="modal fade" id="pokemon-modal" tabindex="-1">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modal-title">Adicionar Pokémon</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+          </div>
+          <div class="modal-body">
+            <form id="pokemon-form">
+              <input type="hidden" id="pokemon-id">
+              <input type="hidden" id="list-id">
+              
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <label for="pokemon-species" class="form-label">Espécie*</label>
+                  <input type="text" class="form-control" id="pokemon-species" required>
+                </div>
+                <div class="col-md-6">
+                  <label for="pokemon-level" class="form-label">Nível*</label>
+                  <input type="number" class="form-control" id="pokemon-level" min="1" max="100" required>
+                </div>
+              </div>
+              
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <label for="pokemon-chance" class="form-label">Chance de Aparecimento (%)*</label>
+                  <input type="number" class="form-control" id="pokemon-chance" min="0.01" max="100" step="0.01" required>
+                  <div class="form-text">Chance de 0.01% a 100%. A soma ideal é 100%.</div>
+                </div>
+                <div class="col-md-6">
+                  <label for="pokemon-quantity" class="form-label">Quantidade Máxima</label>
+                  <div class="input-group">
+                    <input type="number" class="form-control" id="pokemon-quantity" min="1">
+                    <div class="input-group-text">
+                      <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="unlimited-check">
+                        <label class="form-check-label" for="unlimited-check">Ilimitado</label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <label for="pokemon-move1" class="form-label">Movimento 1*</label>
+                  <input type="text" class="form-control" id="pokemon-move1" required>
+                </div>
+                <div class="col-md-6">
+                  <label for="pokemon-move2" class="form-label">Movimento 2</label>
+                  <input type="text" class="form-control" id="pokemon-move2">
+                </div>
+              </div>
+              
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <label for="pokemon-move3" class="form-label">Movimento 3</label>
+                  <input type="text" class="form-control" id="pokemon-move3">
+                </div>
+                <div class="col-md-6">
+                  <label for="pokemon-move4" class="form-label">Movimento 4</label>
+                  <input type="text" class="form-control" id="pokemon-move4">
+                </div>
+              </div>
+              
+              <div class="row mb-3">
+                <div class="col-md-4">
+                  <label for="pokemon-nature" class="form-label">Natureza</label>
+                  <input type="text" class="form-control" id="pokemon-nature">
+                </div>
+                <div class="col-md-4">
+                  <label for="pokemon-ability" class="form-label">Habilidade</label>
+                  <input type="text" class="form-control" id="pokemon-ability">
+                </div>
+                <div class="col-md-4">
+                  <label for="pokemon-item" class="form-label">Item Segurado</label>
+                  <input type="text" class="form-control" id="pokemon-item">
+                </div>
+              </div>
+              
+              <div class="row mb-3">
+                <div class="col-12">
+                  <label class="form-label">IVs (0-31)</label>
+                </div>
+                <div class="col-md-2">
+                  <label for="pokemon-iv-hp" class="form-label">HP</label>
+                  <input type="number" class="form-control" id="pokemon-iv-hp" min="0" max="31" value="0">
+                </div>
+                <div class="col-md-2">
+                  <label for="pokemon-iv-attack" class="form-label">Ataque</label>
+                  <input type="number" class="form-control" id="pokemon-iv-attack" min="0" max="31" value="0">
+                </div>
+                <div class="col-md-2">
+                  <label for="pokemon-iv-defense" class="form-label">Defesa</label>
+                  <input type="number" class="form-control" id="pokemon-iv-defense" min="0" max="31" value="0">
+                </div>
+                <div class="col-md-2">
+                  <label for="pokemon-iv-sp-attack" class="form-label">Sp. Atk</label>
+                  <input type="number" class="form-control" id="pokemon-iv-sp-attack" min="0" max="31" value="0">
+                </div>
+                <div class="col-md-2">
+                  <label for="pokemon-iv-sp-defense" class="form-label">Sp. Def</label>
+                  <input type="number" class="form-control" id="pokemon-iv-sp-defense" min="0" max="31" value="0">
+                </div>
+                <div class="col-md-2">
+                  <label for="pokemon-iv-speed" class="form-label">Velocidade</label>
+                  <input type="number" class="form-control" id="pokemon-iv-speed" min="0" max="31" value="0">
+                </div>
+              </div>
+              
+              <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" id="pokemon-legendary">
+                <label class="form-check-label" for="pokemon-legendary">
+                  Pokémon Lendário
+                </label>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="button" class="btn btn-primary" id="save-pokemon-btn">Salvar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal para reabastecer Pokémon -->
+    <div class="modal fade" id="restock-modal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Reabastecer Pokémon</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+          </div>
+          <div class="modal-body">
+            <form id="restock-form">
+              <input type="hidden" id="restock-pokemon-id">
+              <div class="mb-3">
+                <label for="restock-quantity" class="form-label">Nova Quantidade</label>
+                <input type="number" class="form-control" id="restock-quantity" min="0" required>
+                <div class="form-text">Máximo: <span id="restock-max">0</span></div>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="button" class="btn btn-primary" id="save-restock-btn">Reabastecer</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS Bundle com Popper -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Axios para requisições HTTP -->
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <!-- SweetAlert2 para alertas bonitos -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <!-- JavaScript personalizado -->
+  <script src="js/auth.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
