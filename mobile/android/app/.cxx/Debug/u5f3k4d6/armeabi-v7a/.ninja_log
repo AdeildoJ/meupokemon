@@ -134,3 +134,8 @@
 51	10019	0	RNCImageCropPickerSpec_autolinked_build/CMakeFiles/react_codegen_RNCImageCropPickerSpec.dir/react/renderer/components/RNCImageCropPickerSpec/RNCImageCropPickerSpecJSI-generated.cpp.o	4d37b7fa4812bafc
 41	12902	0	RNCImageCropPickerSpec_autolinked_build/CMakeFiles/react_codegen_RNCImageCropPickerSpec.dir/react/renderer/components/RNCImageCropPickerSpec/ComponentDescriptors.cpp.o	7e28b23eb63bc8dc
 12902	13987	7739043530526783	C:/Users/Tascom/Desktop/Meu App/projectp_fixed/mobile/android/app/build/intermediates/cxx/Debug/u5f3k4d6/obj/armeabi-v7a/libappmodules.so	ed60e7b3bbfee4d8
+2	51	0	C:/Users/Tascom/Desktop/Meu App/projectp_fixed/mobile/android/app/.cxx/Debug/u5f3k4d6/armeabi-v7a/CMakeFiles/cmake.verify_globs	246cae08938ca255
+44	7411	0	RNImagePickerSpec_autolinked_build/CMakeFiles/react_codegen_RNImagePickerSpec.dir/react/renderer/components/RNImagePickerSpec/RNImagePickerSpecJSI-generated.cpp.o	939fe7af6bf0a4f2
+35	7412	0	RNCImageCropPickerSpec_autolinked_build/CMakeFiles/react_codegen_RNCImageCropPickerSpec.dir/react/renderer/components/RNCImageCropPickerSpec/RNCImageCropPickerSpecJSI-generated.cpp.o	4d37b7fa4812bafc
+27	8019	0	RNCImageCropPickerSpec_autolinked_build/CMakeFiles/react_codegen_RNCImageCropPickerSpec.dir/react/renderer/components/RNCImageCropPickerSpec/ComponentDescriptors.cpp.o	7e28b23eb63bc8dc
+8020	8543	7739135324633503	C:/Users/Tascom/Desktop/Meu App/projectp_fixed/mobile/android/app/build/intermediates/cxx/Debug/u5f3k4d6/obj/armeabi-v7a/libappmodules.so	ed60e7b3bbfee4d8

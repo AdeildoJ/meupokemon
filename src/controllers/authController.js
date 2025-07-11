@@ -53,7 +53,7 @@ const authController = {
         }, 
         process.env.JWT_SECRET, 
         {
-          expiresIn: process.env.JWT_EXPIRATION
+          expiresIn: process.env.JWT_EXPIRES_IN
         }
       );
       
@@ -128,7 +128,7 @@ const authController = {
         }, 
         process.env.JWT_SECRET, 
         {
-          expiresIn: process.env.JWT_EXPIRATION
+          expiresIn: process.env.JWT_EXPIRES_IN
         }
       );
       

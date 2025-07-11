@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Configuração base da API
 const API_BASE_URL = __DEV__ 
-  ? 'http://localhost:3000/api' // Desenvolvimento
+  ? 'http://10.0.2.2:3000/api' // Desenvolvimento (Android Emulator)
   : 'https://your-production-api.com/api'; // Produção
 
 // Instância principal da API

@@ -14,6 +14,8 @@ import {
 import {useNavigation} from '@react-navigation/native';
 import { characterService, pokemonDataService } from '../services/api';
 import { Picker } from '@react-native-picker/picker';
+import { launchImageLibrary } from 'react-native-image-picker';
+
 
 const {width} = Dimensions.get('window');
 
@@ -36,14 +38,33 @@ const CreateCharacterScreen = () => {
   const [isShiny, setIsShiny] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loadingStarters, setLoadingStarters] = useState(true);
+  const [avatarUri, setAvatarUri] = useState<string | null>(null);
+
 
   const classes = [
     'Treinador',
-    'Criador',
-    'Coordenador',
     'Pesquisador',
-    'Ranger'
+    'Vilão'
   ];
+  const selectAvatar = () => {
+    launchImageLibrary(
+      {
+        mediaType: 'photo',
+        selectionLimit: 1,
+      },
+      (response) => {
+        if (response.didCancel) {
+          console.log('Usuário cancelou a seleção de imagem');
+        } else if (response.errorCode) {
+          console.log('Erro ao selecionar imagem:', response.errorMessage);
+          Alert.alert('Erro', 'Não foi possível selecionar a imagem');
+        } else if (response.assets && response.assets.length > 0) {
+          const uri = response.assets[0].uri;
+          if (uri) setAvatarUri(uri);
+        }
+      }
+    );
+  };
 
   const genders = ['Masculino', 'Feminino', 'Outro'];
 
@@ -89,6 +110,30 @@ const CreateCharacterScreen = () => {
       setLoadingStarters(false);
     }
   };
+
+    <View style={{ alignItems: 'center', marginBottom: 20 }}>
+    <TouchableOpacity onPress={selectAvatar}>
+      {avatarUri ? (
+        <Image 
+          source={{ uri: avatarUri }} 
+          style={{ width: 100, height: 100, borderRadius: 50 }} 
+        />
+      ) : (
+        <View 
+          style={{
+            width: 100,
+            height: 100,
+            borderRadius: 50,
+            backgroundColor: '#e1e8ed',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}
+        >
+          <Text style={{ color: '#666' }}>Selecionar Avatar</Text>
+        </View>
+      )}
+    </TouchableOpacity>
+  </View>
 
   const validateForm = () => {
     if (!name.trim()) {
@@ -139,7 +184,8 @@ const CreateCharacterScreen = () => {
         gender: selectedGender,
         starterPokemonId: selectedStarter!.id,
         starterPokemonName: selectedStarter!.name,
-        starterIsShiny: isShiny
+        starterIsShiny: isShiny,
+        avatar: avatarUri
       };
 
       const response = await characterService.create(characterData);
