@@ -35,7 +35,14 @@ const HomeScreen = () => {
     try {
       setLoading(true);
       const response = await characterService.list();
-      setCharacters(response.characters || []);
+      const loadedCharacters = response.characters || [];
+
+      setCharacters(loadedCharacters);
+
+      // Se não tiver personagem, vai para CreateCharacterScreen
+      if (loadedCharacters.length === 0) {
+        navigation.navigate('CreateCharacter');
+      }
     } catch (error) {
       console.error('Erro ao carregar personagens:', error);
       Alert.alert('Erro', 'Não foi possível carregar os personagens');
