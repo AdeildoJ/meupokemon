@@ -50,6 +50,7 @@ if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   include("C:/Users/Tascom/Desktop/Meu App/projectp_fixed/mobile/android/app/.cxx/Debug/u5f3k4d6/x86/RNImagePickerSpec_autolinked_build/cmake_install.cmake")
   include("C:/Users/Tascom/Desktop/Meu App/projectp_fixed/mobile/android/app/.cxx/Debug/u5f3k4d6/x86/safeareacontext_autolinked_build/cmake_install.cmake")
   include("C:/Users/Tascom/Desktop/Meu App/projectp_fixed/mobile/android/app/.cxx/Debug/u5f3k4d6/x86/rnscreens_autolinked_build/cmake_install.cmake")
+  include("C:/Users/Tascom/Desktop/Meu App/projectp_fixed/mobile/android/app/.cxx/Debug/u5f3k4d6/x86/RNVectorIconsSpec_autolinked_build/cmake_install.cmake")
 
 endif()
 

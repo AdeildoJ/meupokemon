@@ -19,3 +19,6 @@ C:/Users/Tascom/Desktop/Meu App/projectp_fixed/mobile/android/app/.cxx/Debug/u5f
 C:/Users/Tascom/Desktop/Meu App/projectp_fixed/mobile/android/app/.cxx/Debug/u5f3k4d6/armeabi-v7a/rnscreens_autolinked_build/CMakeFiles/react_codegen_rnscreens.dir
 C:/Users/Tascom/Desktop/Meu App/projectp_fixed/mobile/android/app/.cxx/Debug/u5f3k4d6/armeabi-v7a/rnscreens_autolinked_build/CMakeFiles/edit_cache.dir
 C:/Users/Tascom/Desktop/Meu App/projectp_fixed/mobile/android/app/.cxx/Debug/u5f3k4d6/armeabi-v7a/rnscreens_autolinked_build/CMakeFiles/rebuild_cache.dir
+C:/Users/Tascom/Desktop/Meu App/projectp_fixed/mobile/android/app/.cxx/Debug/u5f3k4d6/armeabi-v7a/RNVectorIconsSpec_autolinked_build/CMakeFiles/react_codegen_RNVectorIconsSpec.dir
+C:/Users/Tascom/Desktop/Meu App/projectp_fixed/mobile/android/app/.cxx/Debug/u5f3k4d6/armeabi-v7a/RNVectorIconsSpec_autolinked_build/CMakeFiles/edit_cache.dir
+C:/Users/Tascom/Desktop/Meu App/projectp_fixed/mobile/android/app/.cxx/Debug/u5f3k4d6/armeabi-v7a/RNVectorIconsSpec_autolinked_build/CMakeFiles/rebuild_cache.dir

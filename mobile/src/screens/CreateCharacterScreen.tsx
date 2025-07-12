@@ -16,93 +16,132 @@ import { characterService, pokemonDataService } from '../services/api';
 import { Picker } from '@react-native-picker/picker';
 import { launchImageLibrary } from 'react-native-image-picker';
 
-
 const {width} = Dimensions.get('window');
+
+// --- ESTRUTURA DE DADOS PARA OS INICIAIS ---
+// Mapeia os Pokémon iniciais por região e classe.
+const starterData = {
+    Kanto: {
+      Treinador: [1, 4, 7], // Bulbasaur, Charmander, Squirtle
+      Pesquisador: [1, 4, 7],
+      Vilão: [29, 32, 56], // Nidoran♀, Nidoran♂, Mankey
+    },
+    Johto: {
+      Treinador: [152, 155, 158], // Chikorita, Cyndaquil, Totodile
+      Pesquisador: [152, 155, 158],
+      Vilão: [167, 177, 215], // Spinarak, Natu, Sneasel
+    },
+    Hoenn: {
+      Treinador: [252, 255, 258], // Treecko, Torchic, Mudkip
+      Pesquisador: [252, 255, 258],
+      Vilão: [302, 335, 347], // Sableye, Zangoose, Anorith
+    },
+    Sinnoh: {
+      Treinador: [387, 390, 393], // Turtwig, Chimchar, Piplup
+      Pesquisador: [387, 390, 393],
+      Vilão: [434, 442, 451], // Stunky, Spiritomb, Skorupi
+    },
+    Unova: { 
+      Treinador: [495, 498, 501], // Snivy, Tepig, Oshawott
+      Pesquisador: [495, 498, 501],
+      Vilão: [509, 517, 527], // Purrloin, Munna, Woobat
+    },
+    Kalos: { 
+      Treinador: [650, 653, 656], // Chespin, Fennekin, Froakie
+      Pesquisador: [650, 653, 656],
+      Vilão: [661, 667, 674], // Fletchling, Litleo, Pancham
+    },
+    Alola: { 
+      Treinador: [722, 725, 728], // Rowlet, Litten, Popplio
+      Pesquisador: [722, 725, 728],
+      Vilão: [734, 744, 757], // Yungoos, Rockruff, Salandit
+    },
+    Galar: { 
+      Treinador: [810, 813, 816], // Grookey, Scorbunny, Sobble
+      Pesquisador: [810, 813, 816],
+      Vilão: [819, 821, 831], // Skwovet, Rookidee, Wooloo
+    },
+    Paldea: { 
+      Treinador: [906, 909, 912], // Sprigatito, Fuecoco, Quaxly
+      Pesquisador: [906, 909, 912],
+      Vilão: [915, 921, 924], // Lechonk, Pawmi, Tandemaus
+    },
+};
 
 interface StarterPokemon {
   id: number;
   name: string;
   sprite: string;
   types: string[];
+  ability: string;
 }
 
 const CreateCharacterScreen = () => {
   const navigation = useNavigation();
   const [name, setName] = useState('');
-  const [age, setAge] = useState('');
   const [selectedClass, setSelectedClass] = useState('Treinador');
-  const [origin, setOrigin] = useState('');
+  const [origin, setOrigin] = useState('Kanto');
   const [selectedGender, setSelectedGender] = useState('Masculino');
   const [starterPokemon, setStarterPokemon] = useState<StarterPokemon[]>([]);
   const [selectedStarter, setSelectedStarter] = useState<StarterPokemon | null>(null);
+  const [pokemonGender, setPokemonGender] = useState<string | null>(null);
   const [isShiny, setIsShiny] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loadingStarters, setLoadingStarters] = useState(true);
   const [avatarUri, setAvatarUri] = useState<string | null>(null);
 
-
-  const classes = [
-    'Treinador',
-    'Pesquisador',
-    'Vilão'
-  ];
-  const selectAvatar = () => {
-    launchImageLibrary(
-      {
-        mediaType: 'photo',
-        selectionLimit: 1,
-      },
-      (response) => {
-        if (response.didCancel) {
-          console.log('Usuário cancelou a seleção de imagem');
-        } else if (response.errorCode) {
-          console.log('Erro ao selecionar imagem:', response.errorMessage);
-          Alert.alert('Erro', 'Não foi possível selecionar a imagem');
-        } else if (response.assets && response.assets.length > 0) {
-          const uri = response.assets[0].uri;
-          if (uri) setAvatarUri(uri);
-        }
-      }
-    );
-  };
-
-  const genders = ['Masculino', 'Feminino', 'Outro'];
-
-  const regions = [
-    'Kanto', 'Johto', 'Hoenn', 'Sinnoh', 'Unova',
-    'Kalos', 'Alola', 'Galar', 'Paldea'
-  ];
-
-  // Pokémon iniciais clássicos
-  const starterIds = [1, 4, 7, 152, 155, 158, 252, 255, 258, 387, 390, 393, 495, 498, 501];
+  const classes = ['Treinador', 'Pesquisador', 'Vilão'];
+  const regions = ['Kanto', 'Johto', 'Hoenn', 'Sinnoh', 'Unova', 'Kalos', 'Alola', 'Galar', 'Paldea'];
 
   useEffect(() => {
-    loadStarterPokemon();
-  }, []);
+    if (origin) {
+      loadStarterPokemon(origin, selectedClass);
+    } else {
+      setStarterPokemon([]);
+      setSelectedStarter(null);
+    }
+  }, [origin, selectedClass]);
 
-  const loadStarterPokemon = async () => {
+  const handleSelectAvatar = () => {
+    launchImageLibrary({ mediaType: 'photo', includeBase64: false }, response => {
+      if (response.didCancel || response.errorCode) return;
+      const uri = response.assets?.[0]?.uri;
+      if (uri) setAvatarUri(uri);
+    });
+  };
+
+  const loadStarterPokemon = async (region: string, charClass: string) => {
+    setLoadingStarters(true);
+    setSelectedStarter(null);
+    setPokemonGender(null);
+
+    const regionStarters = starterData[region as keyof typeof starterData];
+    const starterIds = regionStarters?.[charClass as keyof typeof regionStarters] || regionStarters?.['Treinador'] || [];
+
+    if (starterIds.length === 0) {
+        setStarterPokemon([]);
+        setLoadingStarters(false);
+        return;
+    }
+
     try {
-      setLoadingStarters(true);
       const starters: StarterPokemon[] = [];
-
       for (const id of starterIds) {
         try {
           const pokemon = await pokemonDataService.getPokemon(id);
+          const ability = pokemon.abilities.find((a: any) => !a.is_hidden)?.ability.name || '???';
           starters.push({
             id: pokemon.id,
             name: pokemon.name,
             sprite: pokemon.sprites.front_default,
-            types: pokemon.types.map((type: any) => type.type.name)
+            types: pokemon.types.map((type: any) => type.type.name),
+            ability: ability,
           });
         } catch (error) {
           console.error(`Erro ao carregar Pokémon ${id}:`, error);
         }
       }
-
       setStarterPokemon(starters);
-      if (starters.length > 0) {
-        setSelectedStarter(starters[0]);
-      }
     } catch (error) {
       console.error('Erro ao carregar Pokémon iniciais:', error);
       Alert.alert('Erro', 'Não foi possível carregar os Pokémon iniciais');
@@ -111,59 +150,54 @@ const CreateCharacterScreen = () => {
     }
   };
 
-    <View style={{ alignItems: 'center', marginBottom: 20 }}>
-    <TouchableOpacity onPress={selectAvatar}>
-      {avatarUri ? (
-        <Image 
-          source={{ uri: avatarUri }} 
-          style={{ width: 100, height: 100, borderRadius: 50 }} 
-        />
-      ) : (
-        <View 
-          style={{
-            width: 100,
-            height: 100,
-            borderRadius: 50,
-            backgroundColor: '#e1e8ed',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}
-        >
-          <Text style={{ color: '#666' }}>Selecionar Avatar</Text>
-        </View>
-      )}
-    </TouchableOpacity>
-  </View>
+  const handleSelectStarter = (pokemon: StarterPokemon) => {
+    setSelectedStarter(pokemon);
+    setPokemonGender(null);
+  };
 
   const validateForm = () => {
-    if (!name.trim()) {
-      Alert.alert('Erro', 'Por favor, informe o nome do personagem');
-      return false;
-    }
+    console.log('=== VALIDAÇÃO DEBUG ===');
+    console.log('Nome:', name, '| Trim:', name.trim(), '| Length:', name.trim().length);
+    console.log('Classe:', selectedClass);
+    console.log('Origem:', origin);
+    console.log('Gênero do personagem:', selectedGender);
+    console.log('Pokémon selecionado:', selectedStarter?.name);
+    console.log('Gênero do Pokémon:', pokemonGender);
+    console.log('========================');
 
-    if (name.trim().length < 2 || name.trim().length > 30) {
+    // Validação do nome
+    if (!name || !name.trim() || name.trim().length < 2 || name.trim().length > 30) {
       Alert.alert('Erro', 'O nome deve ter entre 2 e 30 caracteres');
       return false;
     }
 
-    if (!age.trim()) {
-      Alert.alert('Erro', 'Por favor, informe a idade');
+    // Validação da classe
+    if (!selectedClass || selectedClass.trim() === '') {
+      Alert.alert('Erro', 'Por favor, selecione uma classe');
       return false;
     }
 
-    const ageNum = parseInt(age);
-    if (isNaN(ageNum) || ageNum < 10 || ageNum > 99) {
-      Alert.alert('Erro', 'A idade deve ser entre 10 e 99 anos');
+    // Validação da origem
+    if (!origin || origin.trim() === '') {
+      Alert.alert('Erro', 'Por favor, selecione uma região de origem');
       return false;
     }
 
-    if (!origin.trim()) {
-      Alert.alert('Erro', 'Por favor, informe a região de origem');
+    // Validação do gênero do personagem
+    if (!selectedGender || selectedGender.trim() === '') {
+      Alert.alert('Erro', 'Por favor, selecione o gênero do personagem');
       return false;
     }
 
+    // Validação do Pokémon inicial
     if (!selectedStarter) {
       Alert.alert('Erro', 'Por favor, selecione um Pokémon inicial');
+      return false;
+    }
+
+    // Validação do gênero do Pokémon
+    if (!pokemonGender || pokemonGender.trim() === '') {
+      Alert.alert('Erro', 'Por favor, defina o gênero do seu Pokémon inicial');
       return false;
     }
 
@@ -172,47 +206,35 @@ const CreateCharacterScreen = () => {
 
   const handleCreateCharacter = async () => {
     if (!validateForm()) return;
-
+    
+    setLoading(true);
     try {
-      setLoading(true);
-
       const characterData = {
         name: name.trim(),
-        age: parseInt(age),
+        age: parseInt(age) || 18, // Valor padrão se não informado
         class: selectedClass,
-        origin: origin.trim(),
+        origin: origin,
         gender: selectedGender,
         starterPokemonId: selectedStarter!.id,
         starterPokemonName: selectedStarter!.name,
+        starterPokemonGender: pokemonGender,
         starterIsShiny: isShiny,
-        avatar: avatarUri
+        avatar: avatarUri,
       };
 
-      const response = await characterService.create(characterData);
+      console.log('Dados enviados:', characterData);
 
+      const response = await characterService.create(characterData);
       if (response.character) {
-        Alert.alert(
-          'Sucesso!',
-          `Personagem ${name} criado com sucesso!`,
-          [
-            {
-              text: 'OK',
-              onPress: () => navigation.goBack()
-            }
-          ]
-        );
+        Alert.alert('Sucesso!', `Personagem ${name} criado com sucesso!`, [
+          { text: 'OK', onPress: () => navigation.goBack() },
+        ]);
       } else {
         Alert.alert('Erro', 'Não foi possível criar o personagem');
       }
-
     } catch (error: any) {
       console.error('Erro ao criar personagem:', error);
-      
-      let errorMessage = 'Erro ao criar personagem. Tente novamente.';
-      if (error.response?.data?.error) {
-        errorMessage = error.response.data.error;
-      }
-      
+      const errorMessage = error.response?.data?.error || error.message || 'Erro ao criar personagem. Tente novamente.';
       Alert.alert('Erro', errorMessage);
     } finally {
       setLoading(false);
@@ -220,49 +242,112 @@ const CreateCharacterScreen = () => {
   };
 
   const renderStarterSelection = () => {
-    if (loadingStarters) {
-      return (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#FF6B6B" />
-          <Text style={styles.loadingText}>Carregando Pokémon...</Text>
-        </View>
-      );
-    }
-
     return (
       <View style={styles.starterContainer}>
         <Text style={styles.label}>Pokémon Inicial*</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.starterScroll}>
-          {starterPokemon.map((pokemon) => (
-            <TouchableOpacity
-              key={pokemon.id}
-              style={[
-                styles.starterCard,
-                selectedStarter?.id === pokemon.id && styles.selectedStarter
-              ]}
-              onPress={() => setSelectedStarter(pokemon)}
-            >
-              <Image source={{ uri: pokemon.sprite }} style={styles.starterImage} />
-              <Text style={styles.starterName}>{pokemon.name}</Text>
-              <View style={styles.typesContainer}>
-                {pokemon.types.map((type, index) => (
-                  <Text key={index} style={styles.typeText}>{type}</Text>
-                ))}
-              </View>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
         
-        <View style={styles.shinyContainer}>
-          <TouchableOpacity
-            style={[styles.shinyButton, isShiny && styles.shinyButtonActive]}
-            onPress={() => setIsShiny(!isShiny)}
-          >
-            <Text style={[styles.shinyText, isShiny && styles.shinyTextActive]}>
-              ✨ Shiny {isShiny ? '(Ativo)' : '(Inativo)'}
-            </Text>
-          </TouchableOpacity>
-        </View>
+        {loadingStarters ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#FF6B6B" />
+            <Text style={styles.loadingText}>Carregando Pokémon...</Text>
+          </View>
+        ) : (
+          <>
+            {/* As 3 Pokeballs com imagens reais */}
+            <View style={styles.pokeballContainer}>
+              {starterPokemon.map((pokemon, index) => (
+                <TouchableOpacity
+                  key={index}
+                  style={[
+                    styles.pokeballButton,
+                    { 
+                      borderColor: selectedStarter?.id === pokemon.id ? '#FF6B6B' : 'transparent',
+                      borderWidth: selectedStarter?.id === pokemon.id ? 3 : 0,
+                    }
+                  ]}
+                  onPress={() => handleSelectStarter(pokemon)}
+                >
+                  <Image 
+                    source={{ uri: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png' }}
+                    style={styles.pokeballImage}
+                    resizeMode="contain"
+                  />
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {/* Detalhes do Pokémon Selecionado - Layout Horizontal */}
+            {selectedStarter && (
+              <View style={styles.pokemonDetailContainer}>
+                {/* Lado Esquerdo - Imagem do Pokémon */}
+                <View style={styles.pokemonImageContainer}>
+                  <Image 
+                    source={{ 
+                      uri: selectedStarter.sprite.replace('front_default', 'other/official-artwork/front_default') || selectedStarter.sprite 
+                    }} 
+                    style={styles.pokemonImageLarge} 
+                    resizeMode="contain"
+                  />
+                </View>
+
+                {/* Lado Direito - Informações do Pokémon */}
+                <View style={styles.pokemonInfoContainer}>
+                  <Text style={styles.pokemonName}>{selectedStarter.name}</Text>
+                  
+                  <View style={styles.infoRow}>
+                    <Text style={styles.infoLabel}>Tipo:</Text>
+                    <Text style={styles.infoValue}>{selectedStarter.types.join(', ')}</Text>
+                  </View>
+                  
+                  <View style={styles.infoRow}>
+                    <Text style={styles.infoLabel}>Natureza:</Text>
+                    <Text style={styles.infoValue}>Dócil</Text>
+                  </View>
+                  
+                  <View style={styles.infoRow}>
+                    <Text style={styles.infoLabel}>Habilidade:</Text>
+                    <Text style={styles.infoValue}>{selectedStarter.ability}</Text>
+                  </View>
+                  
+                  <View style={styles.infoRow}>
+                    <Text style={styles.infoLabel}>Nível:</Text>
+                    <Text style={styles.infoValue}>5</Text>
+                  </View>
+
+                  {/* Seleção de Gênero do Pokémon */}
+                  <View style={styles.genderSelectorContainer}>
+                    <View style={styles.genderSelector}>
+                      <TouchableOpacity 
+                        style={[
+                          styles.genderButton, 
+                          { backgroundColor: pokemonGender === 'Masculino' ? '#a7d8e4' : '#e0e0e0' }
+                        ]}
+                        onPress={() => setPokemonGender('Masculino')}
+                      >
+                        <Text style={[
+                          styles.genderIcon,
+                          { color: pokemonGender === 'Masculino' ? '#0077b6' : '#666' }
+                        ]}>♂</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity 
+                        style={[
+                          styles.genderButton, 
+                          { backgroundColor: pokemonGender === 'Feminino' ? '#ffb6c1' : '#e0e0e0' }
+                        ]}
+                        onPress={() => setPokemonGender('Feminino')}
+                      >
+                        <Text style={[
+                          styles.genderIcon,
+                          { color: pokemonGender === 'Feminino' ? '#d90429' : '#666' }
+                        ]}>♀</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                </View>
+              </View>
+            )}
+          </>
+        )}
       </View>
     );
   };
@@ -274,42 +359,61 @@ const CreateCharacterScreen = () => {
           <Text style={styles.backButton}>← Voltar</Text>
         </TouchableOpacity>
         <Text style={styles.title}>Criar Personagem</Text>
-        <View style={styles.placeholder} />
+        <View style={{width: 60}} />
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.form}>
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Nome do Personagem*</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Digite o nome"
-              value={name}
-              onChangeText={setName}
-              maxLength={30}
-              editable={!loading}
-            />
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20 }}>
+            <TouchableOpacity onPress={handleSelectAvatar}>
+              {avatarUri ? (
+                <Image source={{ uri: avatarUri }} style={styles.avatarImage} />
+              ) : (
+                <View style={styles.avatarPlaceholder}>
+                  <Text style={styles.avatarPlaceholderText}>+</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.label}>NOME DO PERSONAGEM*</Text>
+              <TextInput 
+                style={styles.input} 
+                placeholder="Digite o nome" 
+                value={name} 
+                onChangeText={setName} 
+                maxLength={40} 
+                editable={!loading} 
+              />
+            </View>
           </View>
 
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Idade*</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="10-99 anos"
-              value={age}
-              onChangeText={setAge}
-              keyboardType="numeric"
-              maxLength={2}
-              editable={!loading}
-            />
+          <View style={{ flexDirection: 'row', justifyContent: 'center', marginBottom: 20 }}>
+            <TouchableOpacity 
+              style={[
+                styles.charGenderButton, 
+                { backgroundColor: selectedGender === 'Masculino' ? '#62ec80ff' : '#e1e8ed' }
+              ]} 
+              onPress={() => setSelectedGender('Masculino')}
+            >
+              <Text style={styles.genderIcon}>♂</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[
+                styles.charGenderButton, 
+                { backgroundColor: selectedGender === 'Feminino' ? '#f5f84bff' : '#e1e8ed' }
+              ]} 
+              onPress={() => setSelectedGender('Feminino')}
+            >
+              <Text style={styles.genderIcon}>♀</Text>
+            </TouchableOpacity>
           </View>
 
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Classe*</Text>
             <View style={styles.pickerContainer}>
-              <Picker
-                selectedValue={selectedClass}
-                onValueChange={setSelectedClass}
+              <Picker 
+                selectedValue={selectedClass} 
+                onValueChange={(itemValue) => setSelectedClass(itemValue)} 
                 enabled={!loading}
               >
                 {classes.map((cls) => (
@@ -321,25 +425,14 @@ const CreateCharacterScreen = () => {
 
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Região de Origem*</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Ex: Kanto, Johto, Hoenn..."
-              value={origin}
-              onChangeText={setOrigin}
-              editable={!loading}
-            />
-          </View>
-
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Gênero*</Text>
             <View style={styles.pickerContainer}>
-              <Picker
-                selectedValue={selectedGender}
-                onValueChange={setSelectedGender}
+              <Picker 
+                selectedValue={origin} 
+                onValueChange={(itemValue) => setOrigin(itemValue)} 
                 enabled={!loading}
               >
-                {genders.map((gender) => (
-                  <Picker.Item key={gender} label={gender} value={gender} />
+                {regions.map((region) => (
+                  <Picker.Item key={region} label={region} value={region} />
                 ))}
               </Picker>
             </View>
@@ -347,9 +440,9 @@ const CreateCharacterScreen = () => {
 
           {renderStarterSelection()}
 
-          <TouchableOpacity
-            style={[styles.createButton, loading && styles.createButtonDisabled]}
-            onPress={handleCreateCharacter}
+          <TouchableOpacity 
+            style={[styles.createButton, loading && styles.createButtonDisabled]} 
+            onPress={handleCreateCharacter} 
             disabled={loading}
           >
             {loading ? (
@@ -365,169 +458,226 @@ const CreateCharacterScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  container: { 
+    flex: 1, 
+    backgroundColor: '#fcfcfce3' 
+  },
+  header: { 
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    alignItems: 'center', 
+    padding: 15, 
+    backgroundColor: 'white', 
+    borderBottomWidth: 1, 
+    borderBottomColor: '#4caff7ff', 
+    paddingTop: 50 
+  },
+  backButton: { 
+    fontSize: 16, 
+    color: '#FF6B6B', 
+    fontWeight: 'bold' 
+  },
+  title: { 
+    fontSize: 20, 
+    fontWeight: 'bold', 
+    color: '#333' 
+  },
+  content: { 
+    flex: 1 
+  },
+  form: { 
+    padding: 20 
+  },
+  avatarImage: { 
+    width: 100, 
+    height: 100, 
+    borderRadius: 30, 
+    marginRight: 10 
+  },
+  avatarPlaceholder: { 
+    width: 100, 
+    height: 100, 
+    borderRadius: 30, 
+    backgroundColor: '#f7c7c7ff', 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    marginRight: 10 
+  },
+  avatarPlaceholderText: { 
+    color: '#666', 
+    fontSize: 50 
+  },
+  charGenderButton: { 
+    width: 60, 
+    height: 60, 
+    borderRadius: 30, 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    marginHorizontal: 10 
+  },
+  inputContainer: { 
+    marginBottom: 20 
+  },
+  label: { 
+    fontSize: 16, 
+    fontWeight: '600', 
+    color: '#333', 
+    marginBottom: 8, 
+    textTransform: 'capitalize' 
+  },
+  input: { 
+    backgroundColor: 'white', 
+    borderWidth: 1, 
+    borderColor: '#e1e8ed', 
+    borderRadius: 12, 
+    padding: 16, 
+    fontSize: 16, 
+    color: '#333' 
+  },
+  pickerContainer: { 
+    backgroundColor: 'white', 
+    borderWidth: 1, 
+    borderColor: '#e1e8ed', 
+    borderRadius: 12, 
+    overflow: 'hidden' 
+  },
+  starterContainer: { 
+    marginBottom: 20 
+  },
+  loadingContainer: { 
+    alignItems: 'center', 
+    paddingVertical: 40 
+  },
+  loadingText: { 
+    fontSize: 16, 
+    color: '#666', 
+    marginTop: 10 
+  },
+  pokeballContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginVertical: 15,
+    paddingHorizontal: 20,
+  },
+  pokeballButton: { 
+    width: 70, 
+    height: 70, 
+    borderRadius: 35, 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    marginHorizontal: 15,
     backgroundColor: '#f8f9fa',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  header: {
+  pokeballImage: {
+    width: 50,
+    height: 50,
+  },
+  pokemonDetailContainer: { 
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    marginTop: 20, 
+    padding: 20, 
+    backgroundColor: '#ffffff', 
+    borderRadius: 20, 
+    borderWidth: 1, 
+    borderColor: '#e1e8ed',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  pokemonImageContainer: {
+    flex: 0.4,
     alignItems: 'center',
-    padding: 15,
-    backgroundColor: 'white',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e1e8ed',
-    paddingTop: 50,
+    justifyContent: 'center',
+    paddingRight: 15,
   },
-  backButton: {
-    fontSize: 16,
-    color: '#FF6B6B',
-    fontWeight: 'bold',
+  pokemonImageLarge: { 
+    width: 250, 
+    height: 250,
   },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  placeholder: {
-    width: 60,
-  },
-  content: {
-    flex: 1,
-  },
-  form: {
-    padding: 20,
-  },
-  inputContainer: {
-    marginBottom: 20,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 8,
-  },
-  input: {
-    backgroundColor: 'white',
-    borderWidth: 1,
-    borderColor: '#e1e8ed',
-    borderRadius: 12,
-    padding: 16,
-    fontSize: 16,
-    color: '#333',
-  },
-  pickerContainer: {
-    backgroundColor: 'white',
-    borderWidth: 1,
-    borderColor: '#e1e8ed',
-    borderRadius: 12,
-    overflow: 'hidden',
-  },
-  starterContainer: {
-    marginBottom: 20,
-  },
-  starterScroll: {
-    marginVertical: 10,
-  },
-  starterCard: {
-    backgroundColor: 'white',
-    borderWidth: 2,
-    borderColor: '#e1e8ed',
-    borderRadius: 12,
-    padding: 15,
-    marginRight: 10,
-    alignItems: 'center',
-    width: 120,
-  },
-  selectedStarter: {
-    borderColor: '#FF6B6B',
-    backgroundColor: '#FFF5F5',
-  },
-  starterImage: {
-    width: 60,
-    height: 60,
-    marginBottom: 8,
-  },
-  starterName: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#333',
-    textAlign: 'center',
-    marginBottom: 4,
-    textTransform: 'capitalize',
-  },
-  typesContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+  pokemonInfoContainer: {
+    flex: 0.6,
     justifyContent: 'center',
   },
-  typeText: {
-    fontSize: 10,
-    color: '#666',
-    backgroundColor: '#f1f2f6',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 8,
-    marginHorizontal: 2,
-    textTransform: 'capitalize',
-  },
-  shinyContainer: {
-    alignItems: 'center',
-    marginTop: 10,
-  },
-  shinyButton: {
-    backgroundColor: '#f1f2f6',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 20,
-    borderWidth: 2,
-    borderColor: '#e1e8ed',
-  },
-  shinyButtonActive: {
-    backgroundColor: '#FFD700',
-    borderColor: '#FFA500',
-  },
-  shinyText: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#666',
-  },
-  shinyTextActive: {
+  pokemonName: { 
+    fontSize: 24, 
+    fontWeight: 'bold', 
+    marginBottom: 15, 
+    textTransform: 'capitalize', 
     color: '#333',
+    textAlign: 'center',
   },
-  loadingContainer: {
+  infoRow: {
+    flexDirection: 'row',
+    marginBottom: 8,
     alignItems: 'center',
-    paddingVertical: 40,
   },
-  loadingText: {
-    fontSize: 16,
+  infoLabel: {
+    fontSize: 14,
+    fontWeight: '600',
     color: '#666',
-    marginTop: 10,
+    width: 80,
   },
-  createButton: {
-    backgroundColor: '#FF6B6B',
-    borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
-    marginTop: 20,
-    shadowColor: '#FF6B6B',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
+  infoValue: {
+    fontSize: 14,
+    color: '#333',
+    textTransform: 'capitalize',
+    flex: 1,
   },
-  createButtonDisabled: {
-    backgroundColor: '#ccc',
-    shadowOpacity: 0,
-    elevation: 0,
+  genderSelectorContainer: {
+    marginTop: 15,
   },
-  createButtonText: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: 'bold',
+  genderLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#666',
+    marginBottom: 8,
+  },
+  genderSelector: { 
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
+  genderButton: { 
+    width: 40, 
+    height: 40, 
+    borderRadius: 20, 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    marginHorizontal: 8, 
+    borderWidth: 2, 
+    borderColor: 'transparent' 
+  },
+  genderIcon: {
+    fontSize: 20,
+    fontWeight: 'bold'
+  },
+  createButton: { 
+    backgroundColor: '#FF6B6B', 
+    borderRadius: 12, 
+    padding: 16, 
+    alignItems: 'center', 
+    marginTop: 30, 
+    shadowColor: '#FF6B6B', 
+    shadowOffset: { width: 0, height: 4 }, 
+    shadowOpacity: 0.3, 
+    shadowRadius: 8, 
+    elevation: 8 
+  },
+  createButtonDisabled: { 
+    backgroundColor: '#ccc', 
+    shadowOpacity: 0, 
+    elevation: 0 
+  },
+  createButtonText: { 
+    color: 'white', 
+    fontSize: 18, 
+    fontWeight: 'bold' 
   },
 });
 
