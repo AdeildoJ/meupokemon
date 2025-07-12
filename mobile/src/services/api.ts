@@ -71,7 +71,6 @@ export interface Character {
   id: string;
   userId: number;
   name: string;
-  age: number;
   class: string;
   origin: string;
   gender: string;

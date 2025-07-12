@@ -1,6 +1,9 @@
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 import { Alert } from 'react-native';
 import { authService, apiUtils, User } from '../services/api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -116,9 +119,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       
       if (response.token && response.user) {
         // Salvar token e dados do usuário
-        await apiUtils.saveToken(response.token);
-        await apiUtils.saveUser(response.user);
-        
+        await AsyncStorage.setItem('@user', JSON.stringify({
+  id: response.user.id,
+  name: response.user.name,
+  email: response.user.email,
+  token: response.token, // ← aqui o token vai junto
+}));    
         setUser(response.user);
         setIsAuthenticated(true);
         

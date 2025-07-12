@@ -22,14 +22,14 @@ const Character = sequelize.define('Character', {
       len: [2, 30]
     }
   },
-  age: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    validate: {
-      min: 10,
-      max: 99
-    }
-  },
+  // age: {
+  //   type: DataTypes.INTEGER,
+  //   allowNull: false,
+  //   validate: {
+  //     min: 10,
+  //     max: 99
+  //   }
+  // },
   class: {
     type: DataTypes.STRING,
     allowNull: false,

@@ -1,3 +1,4 @@
+
 import React, {useState, useEffect} from 'react';
 import {
   View,
@@ -15,6 +16,28 @@ import {useNavigation} from '@react-navigation/native';
 import { characterService, pokemonDataService } from '../services/api';
 import { Picker } from '@react-native-picker/picker';
 import { launchImageLibrary } from 'react-native-image-picker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const [token, setToken] = useState<string | null>(null);
+const [userId, setUserId] = useState<string | null>(null);
+
+useEffect(() => {
+  const loadUser = async () => {
+    try {
+      const userData = await AsyncStorage.getItem('@user');
+      if (userData) {
+        const userParsed = JSON.parse(userData);
+        setUserId(userParsed.id); // 👈 Isso assume que o objeto tem .id
+        setToken(parsedUser.token); // 👈 aqui buscamos o token
+      }
+    } catch (error) {
+      console.error('Erro ao carregar usuário:', error);
+    }
+  };
+
+  loadUser();
+}, []);
+
 
 const {width} = Dimensions.get('window');
 
@@ -210,8 +233,8 @@ const CreateCharacterScreen = () => {
     setLoading(true);
     try {
       const characterData = {
+        Id: userId,
         name: name.trim(),
-        age: parseInt(age) || 18, // Valor padrão se não informado
         class: selectedClass,
         origin: origin,
         gender: selectedGender,

@@ -1,10 +1,11 @@
-import React from 'react';
 import { View, ActivityIndicator } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { AuthProvider, useAuthContext } from './src/context/AuthContext';
 import RootNavigator from './src/navigation/MainNavigator';
 import LoginScreen from './src/screens/LoginScreen';
 import AuthNavigator from './src/navigation/AuthNavigator'; 
+import React, { useState, useEffect } from 'react';
+
 
 const AppContent = () => {
   const { isAuthenticated, loading } = useAuthContext();
