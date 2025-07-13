@@ -1,4 +1,3 @@
-
 import React, {useState, useEffect} from 'react';
 import {
   View,
@@ -16,28 +15,7 @@ import {useNavigation} from '@react-navigation/native';
 import { characterService, pokemonDataService } from '../services/api';
 import { Picker } from '@react-native-picker/picker';
 import { launchImageLibrary } from 'react-native-image-picker';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
-const [token, setToken] = useState<string | null>(null);
-const [userId, setUserId] = useState<string | null>(null);
-
-useEffect(() => {
-  const loadUser = async () => {
-    try {
-      const userData = await AsyncStorage.getItem('@user');
-      if (userData) {
-        const userParsed = JSON.parse(userData);
-        setUserId(userParsed.id); // 👈 Isso assume que o objeto tem .id
-        setToken(parsedUser.token); // 👈 aqui buscamos o token
-      }
-    } catch (error) {
-      console.error('Erro ao carregar usuário:', error);
-    }
-  };
-
-  loadUser();
-}, []);
-
+import { useAuth } from '../context/AuthContext';
 
 const {width} = Dimensions.get('window');
 
@@ -101,17 +79,18 @@ interface StarterPokemon {
 
 const CreateCharacterScreen = () => {
   const navigation = useNavigation();
+  const { user } = useAuth(); // Usar o contexto de autenticação
+  
   const [name, setName] = useState('');
   const [selectedClass, setSelectedClass] = useState('Treinador');
   const [origin, setOrigin] = useState('Kanto');
   const [selectedGender, setSelectedGender] = useState('Masculino');
   const [starterPokemon, setStarterPokemon] = useState<StarterPokemon[]>([]);
   const [selectedStarter, setSelectedStarter] = useState<StarterPokemon | null>(null);
-  const [pokemonGender, setPokemonGender] = useState<string | null>(null);
-  const [isShiny, setIsShiny] = useState(false);
+  const [pokemonGender, setPokemonGender] = useState<string | undefined>(undefined); // Mudado para undefined
   const [loading, setLoading] = useState(false);
   const [loadingStarters, setLoadingStarters] = useState(true);
-  const [avatarUri, setAvatarUri] = useState<string | null>(null);
+  const [avatarUri, setAvatarUri] = useState<string | undefined>(undefined); // Mudado para undefined
 
   const classes = ['Treinador', 'Pesquisador', 'Vilão'];
   const regions = ['Kanto', 'Johto', 'Hoenn', 'Sinnoh', 'Unova', 'Kalos', 'Alola', 'Galar', 'Paldea'];
@@ -136,7 +115,7 @@ const CreateCharacterScreen = () => {
   const loadStarterPokemon = async (region: string, charClass: string) => {
     setLoadingStarters(true);
     setSelectedStarter(null);
-    setPokemonGender(null);
+    setPokemonGender(undefined); // Mudado para undefined
 
     const regionStarters = starterData[region as keyof typeof starterData];
     const starterIds = regionStarters?.[charClass as keyof typeof regionStarters] || regionStarters?.['Treinador'] || [];
@@ -175,7 +154,7 @@ const CreateCharacterScreen = () => {
 
   const handleSelectStarter = (pokemon: StarterPokemon) => {
     setSelectedStarter(pokemon);
-    setPokemonGender(null);
+    setPokemonGender(undefined); // Mudado para undefined
   };
 
   const validateForm = () => {
@@ -186,7 +165,14 @@ const CreateCharacterScreen = () => {
     console.log('Gênero do personagem:', selectedGender);
     console.log('Pokémon selecionado:', selectedStarter?.name);
     console.log('Gênero do Pokémon:', pokemonGender);
+    console.log('User ID:', user?.id);
     console.log('========================');
+
+    // Validação do usuário logado
+    if (!user || !user.id) {
+      Alert.alert('Erro', 'Usuário não autenticado. Faça login novamente.');
+      return false;
+    }
 
     // Validação do nome
     if (!name || !name.trim() || name.trim().length < 2 || name.trim().length > 30) {
@@ -233,22 +219,22 @@ const CreateCharacterScreen = () => {
     setLoading(true);
     try {
       const characterData = {
-        Id: userId,
         name: name.trim(),
+        age: 18, // Valor padrão removido do formulário
         class: selectedClass,
         origin: origin,
         gender: selectedGender,
         starterPokemonId: selectedStarter!.id,
         starterPokemonName: selectedStarter!.name,
-        starterPokemonGender: pokemonGender,
-        starterIsShiny: isShiny,
-        avatar: avatarUri,
+        starterPokemonGender: pokemonGender, // Agora é string | undefined
+        starterIsShiny: false, // Removido do formulário
+        avatar: avatarUri, // Agora é string | undefined
       };
 
       console.log('Dados enviados:', characterData);
 
       const response = await characterService.create(characterData);
-      if (response.character) {
+      if (response.data) {
         Alert.alert('Sucesso!', `Personagem ${name} criado com sucesso!`, [
           { text: 'OK', onPress: () => navigation.goBack() },
         ]);
@@ -339,6 +325,7 @@ const CreateCharacterScreen = () => {
 
                   {/* Seleção de Gênero do Pokémon */}
                   <View style={styles.genderSelectorContainer}>
+                    <Text style={styles.genderLabel}>Gênero*:</Text>
                     <View style={styles.genderSelector}>
                       <TouchableOpacity 
                         style={[
@@ -621,8 +608,8 @@ const styles = StyleSheet.create({
     paddingRight: 15,
   },
   pokemonImageLarge: { 
-    width: 250, 
-    height: 250,
+    width: 140, 
+    height: 140,
   },
   pokemonInfoContainer: {
     flex: 0.6,

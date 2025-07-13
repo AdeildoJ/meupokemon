@@ -71,12 +71,14 @@ export interface Character {
   id: string;
   userId: number;
   name: string;
+  age?: number; // Tornado opcional
   class: string;
   origin: string;
   gender: string;
   avatar?: string;
   starterPokemonId: number;
   starterPokemonName: string;
+  starterPokemonGender?: string; // Adicionado
   starterIsShiny: boolean;
   level: number;
   experience: number;
@@ -187,13 +189,15 @@ export const authService = {
 export const characterService = {
   async create(characterData: {
     name: string;
-    age: number;
+    age?: number; // Tornado opcional
     class: string;
     origin: string;
     gender: string;
     starterPokemonId: number;
     starterPokemonName: string;
+    starterPokemonGender?: string; // Adicionado
     starterIsShiny?: boolean;
+    avatar?: string; // Adicionado
   }): Promise<ApiResponse<Character>> {
     const response = await api.post<ApiResponse<Character>>('/characters', characterData);
     return response.data;
@@ -290,3 +294,4 @@ export const apiUtils = {
 };
 
 export default api;
+

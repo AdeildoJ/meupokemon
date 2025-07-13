@@ -19,7 +19,7 @@ const characterController = {
       }
 
       // Validar dados obrigatórios
-      if (!name || !age || !characterClass || !origin || !gender || !starterPokemonId || !starterPokemonName) {
+      if (!name || !characterClass || !origin || !gender || !starterPokemonId || !starterPokemonName) {
         return res.status(400).json({
           error: 'Todos os campos obrigatórios devem ser preenchidos'
         });

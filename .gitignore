@@ -47,3 +47,8 @@ build/
 *.bak
 *.backup
 
+# Android build
+/mobile/android/.gradle/
+/mobile/android/app/.cxx/
+/mobile/android/app/build/
+/mobile/android/build/

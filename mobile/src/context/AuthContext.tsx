@@ -3,8 +3,6 @@ import { Alert } from 'react-native';
 import { authService, apiUtils, User } from '../services/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-
-
 interface AuthContextType {
   isAuthenticated: boolean;
   user: User | null;
@@ -118,13 +116,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const response = await authService.register(name, email, password, confirmPassword);
       
       if (response.token && response.user) {
-        // Salvar token e dados do usuário
-        await AsyncStorage.setItem('@user', JSON.stringify({
-  id: response.user.id,
-  name: response.user.name,
-  email: response.user.email,
-  token: response.token, // ← aqui o token vai junto
-}));    
+        // Salvar token e dados do usuário usando apiUtils
+        await apiUtils.saveToken(response.token);
+        await apiUtils.saveUser(response.user);
+        
         setUser(response.user);
         setIsAuthenticated(true);
         
@@ -230,9 +225,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       
       const response = await authService.updateProfile(name, avatar);
       
-      if (response.user) {
-        setUser(response.user);
-        await apiUtils.saveUser(response.user);
+      if (response.data) {
+        setUser(response.data);
+        await apiUtils.saveUser(response.data);
         
         Alert.alert('Sucesso', response.message || 'Perfil atualizado com sucesso!');
         return true;
@@ -290,3 +285,4 @@ export const useAuth = () => {
   }
   return context;
 };
+
